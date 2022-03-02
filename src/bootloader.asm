@@ -46,8 +46,8 @@ halt:
 	hlt
 	jmp halt
 
-%include "src/bootloader/print.asm"
-%include "src/bootloader/disk.asm"
+%include "src/print.asm"
+%include "src/disk.asm"
 
 msg_load_kernel: db 'load kernel...', 0
 BOOT_DRIVE: db 0
