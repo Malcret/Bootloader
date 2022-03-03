@@ -30,7 +30,7 @@ load_kernel:
 	mov bx, msg_load_kernel
 	call print_string
 
-	mov al, 0x04 ; number of sectors to read
+	mov al, 0x01 ; number of sectors to read
 	mov bx, KERNEL_OFFSET ; buffer address pointer
 	mov ch, 0x00 ; cylinder
 	mov cl, 0x02 ; sector
