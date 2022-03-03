@@ -7,7 +7,7 @@ start:
 	mov [BOOT_DRIVE], dl
 
 	; setup the stack
-	mov ax, 0x9000
+	mov ax, 0x1000
 	mov ss, ax
 	mov sp, 4096 ; setup the stack space to 4kiB 
 	mov bp, sp ; move the base stack at the bottom of the stack

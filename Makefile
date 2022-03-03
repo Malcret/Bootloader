@@ -8,7 +8,7 @@ OBJ_DIR = $(BIN_DIR)/obj
 # Files
 BOOTLOADER_BIN = $(BIN_DIR)/$(NAME).bin
 
-all: bin
+all: run
 
 $(BOOTLOADER_BIN): $(SRC_DIR)/bootloader.asm
 	mkdir -p $(OBJ_DIR)
