@@ -46,8 +46,6 @@ clear_screen:
 	ret
 
 print_string:
-    pusha
-
 	lodsb ; load msg first byte from SI
 
 	or al, al
@@ -59,19 +57,15 @@ print_string:
 	jmp print_string
 
 	.exit:
-        popa
 		ret
 
 disk_load:
-    pusha
-
     mov ah, 0x02 ; read mode
     mov dh, 0x00 ; head 0
     
     int 0x13 ; load disk sectors
     jc .failed ; check for errors
 
-    popa
     ret
 
     .failed:
