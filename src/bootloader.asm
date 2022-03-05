@@ -1,55 +1,92 @@
 [bits 16]
 [org 0x7c00]
 
-KERNEL_OFFSET equ 0x7e00 ; kernel address
+KERNEL_SEGMENT equ 0x0000
+KERNEL_OFFSET equ 0x7e00
 
-start:
+boot:
 	mov [BOOT_DRIVE], dl
 
-	; setup the stack
-	mov ax, 0x1000
-	mov ss, ax
-	mov sp, 4096 ; setup the stack space to 4kiB 
-	mov bp, sp ; move the base stack at the bottom of the stack
-
-	call init_segment_registers
-	call load_kernel
-
-	jmp halt ; stop cpu
-
-init_segment_registers:
-	xor ax, ax
-	mov ds, ax
+	; setup segments
+    xor ax, ax
+    mov ds, ax
 	mov es, ax
-	
-	ret
+    mov ss, ax
+    mov sp, 0x7c00 ; stack at 0x0000:0x7c00
 
-load_kernel:
 	call clear_screen
 
-	mov bx, msg_load_kernel
+	mov si, msg_load_kernel
 	call print_string
 
 	mov al, 0x01 ; number of sectors to read
-	mov bx, KERNEL_OFFSET ; buffer address pointer
+	mov bx, KERNEL_OFFSET
 	mov ch, 0x00 ; cylinder
 	mov cl, 0x02 ; sector
-	mov dl, [BOOT_DRIVE] ; disk
+	mov dl, [BOOT_DRIVE]
 	call disk_load
 
-	call KERNEL_OFFSET
+	call KERNEL_SEGMENT:KERNEL_OFFSET
 
+	jmp halt ; stop cpu
+
+clear_screen:
+	pusha
+
+	mov ah, 0x07 ; scroll down screen
+	mov al, 0x00 ; scroll whole screen
+	mov bh, 0x0f ; set color to white on black
+	mov ch, 0x00 ; upper row
+	mov cl, 0x00 ; left column
+	mov dh, 0x18 ; lower row
+	mov dl, 0x4f ; right column
+	int 0x10 ; BIOS interrupt for video services
+
+	popa
 	ret
+
+print_string:
+    pusha
+
+	lodsb ; load msg first byte from SI
+
+	or al, al
+	jz .exit ; if 0 exit
+
+	mov ah, 0x0e ; write character mode
+	int 0x10 ; print character
+
+	jmp print_string
+
+	.exit:
+        popa
+		ret
+
+disk_load:
+    pusha
+
+    mov ah, 0x02 ; read mode
+    mov dh, 0x00 ; head 0
+    
+    int 0x13 ; load disk sectors
+    jc .failed ; check for errors
+
+    popa
+    ret
+
+    .failed:
+        mov si, .msg_failed ; set msg to print
+        call print_string
+        jmp halt ; stop
+
+    .msg_failed: db 'Failed to load disk', 0
 
 halt:
 	cli
 	hlt
 	jmp halt
 
-%include "src/print.asm"
-%include "src/disk.asm"
-
-msg_load_kernel: db 'load kernel...', 0
+msg_load_kernel: db 'Load kernel...', 0
 BOOT_DRIVE: db 0
 
 ; set the first sector as a bootloader
