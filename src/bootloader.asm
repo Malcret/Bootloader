@@ -4,6 +4,10 @@
 KERNEL_SEGMENT equ 0x0000
 KERNEL_OFFSET equ 0x7e00
 
+%ifndef DISK_SECTOR_NB
+	DISK_SECTOR_NB equ 0x01
+%endif
+
 boot:
 	mov [BOOT_DRIVE], dl
 
@@ -12,18 +16,15 @@ boot:
     mov ds, ax
 	mov es, ax
     mov ss, ax
-    mov sp, 0x7c00 ; stack at 0x0000:0x7c00
+    mov sp, 0x7c00 ; setup stack at 0x0000:0x7c00
 
 	call clear_screen
 
 	mov si, msg_load_kernel
 	call print_string
 
-	mov al, 0x01 ; number of sectors to read
+	mov al, DISK_SECTOR_NB ; number of sectors to read
 	mov bx, KERNEL_OFFSET
-	mov ch, 0x00 ; cylinder
-	mov cl, 0x02 ; sector
-	mov dl, [BOOT_DRIVE]
 	call disk_load
 
 	call KERNEL_SEGMENT:KERNEL_OFFSET
@@ -48,7 +49,7 @@ clear_screen:
 print_string:
 	lodsb ; load msg first byte from SI
 
-	or al, al
+	or al, al ; check if not 0
 	jz .exit ; if 0 exit
 
 	mov ah, 0x0e ; write character mode
@@ -60,10 +61,13 @@ print_string:
 		ret
 
 disk_load:
-    mov ah, 0x02 ; read mode
-    mov dh, 0x00 ; head 0
+    mov ah, 0x02 ; read sectors mode
+	mov ch, 0x00 ; cylinder
+	mov cl, 0x02 ; start from the 2nd sector
+	mov dh, 0x00 ; head 0
+	mov dl, [BOOT_DRIVE]
     
-    int 0x13 ; load disk sectors
+    int 0x13 ; read disk sectors
     jc .failed ; check for errors
 
     ret
@@ -71,7 +75,7 @@ disk_load:
     .failed:
         mov si, .msg_failed ; set msg to print
         call print_string
-        jmp halt ; stop
+        jmp halt
 
     .msg_failed: db 'Failed to load disk', 0
 

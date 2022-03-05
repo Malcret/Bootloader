@@ -8,11 +8,14 @@ OBJ_DIR = $(BIN_DIR)/obj
 # Files
 BOOTLOADER_BIN = $(BIN_DIR)/$(NAME).bin
 
+# Parameters
+DISK_SECTOR_NB = 2
+
 all: run
 
 $(BOOTLOADER_BIN): $(SRC_DIR)/bootloader.asm
 	mkdir -p $(dir $@)
-	nasm $< -f bin -o $@
+	nasm $< -f bin -o $@ -DDISK_SECTOR_NB=$(DISK_SECTOR_NB)
 
 bin: $(BOOTLOADER_BIN)
 
