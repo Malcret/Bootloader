@@ -5,7 +5,7 @@ KERNEL_SEGMENT equ 0x0000
 KERNEL_OFFSET equ 0x7e00
 
 %ifndef DISK_SECTOR_NB
-	DISK_SECTOR_NB equ 0x01
+	DISK_SECTOR_NB equ 1
 %endif
 
 boot:
@@ -23,8 +23,6 @@ boot:
 	mov si, msg_load_kernel
 	call print_string
 
-	mov al, DISK_SECTOR_NB ; number of sectors to read
-	mov bx, KERNEL_OFFSET
 	call disk_load
 
 	call KERNEL_SEGMENT:KERNEL_OFFSET
@@ -61,16 +59,25 @@ print_string:
 		ret
 
 disk_load:
-    mov ah, 0x02 ; read sectors mode
-	mov ch, 0x00 ; cylinder
-	mov cl, 0x02 ; start from the 2nd sector
-	mov dh, 0x00 ; head 0
-	mov dl, [BOOT_DRIVE]
-    
-    int 0x13 ; read disk sectors
-    jc .failed ; check for errors
 
-    ret
+	.chs:
+		;mov ah, 0x02 ; read sectors mode
+		;mov al, DISK_SECTOR_NB ; number of sectors to read
+		;mov bx, KERNEL_OFFSET
+		;mov ch, 0x00 ; cylinder
+		;mov cl, 0x02 ; start from the 2nd sector
+		;mov dh, 0x00 ; head 0
+		;mov dl, [BOOT_DRIVE]
+
+	.lba:
+		mov si, DAP_STRUCTURE
+		mov ah, 0x42
+		mov dl, 0x80
+		
+		int 0x13 ; read disk sectors
+		jc .failed ; check for errors
+
+		ret
 
     .failed:
         mov si, .msg_failed ; set msg to print
@@ -85,7 +92,17 @@ halt:
 	jmp halt
 
 msg_load_kernel: db 'Load kernel...', 0
+
 BOOT_DRIVE: db 0
+
+DAP_STRUCTURE:
+	db 0x10 ; size of the DAP
+	db 0 ; unused, set to 0
+	dw DISK_SECTOR_NB ; number of sectors to be read
+	dw KERNEL_OFFSET ; offset pointer to the memory buffer to which sectors will be transferred
+	dw KERNEL_SEGMENT ; segment pointer to the memory buffer to which sectors will be transferred
+	dd 1 ; lower halt of the start of the sectors to be read
+	dd 0 ; upper halt of the start of the sectors to be read
 
 ; set the first sector as a bootloader
 times 510 - ($-$$) db 0 ; fill remaining space with 0
