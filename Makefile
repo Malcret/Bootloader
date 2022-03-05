@@ -9,7 +9,7 @@ OBJ_DIR = $(BIN_DIR)/obj
 BOOTLOADER_BIN = $(BIN_DIR)/$(NAME).bin
 
 # Parameters
-DISK_SECTOR_NB = 2
+DISK_SECTOR_NB = 1
 
 all: run
 
