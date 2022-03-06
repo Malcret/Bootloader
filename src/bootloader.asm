@@ -8,8 +8,8 @@ boot:
 	; setup segments
     xor ax, ax
     mov ds, ax
-	mov es, ax
     mov ss, ax
+	mov es, ax
 
 	; setup stack
 	mov bp, 0x7c00

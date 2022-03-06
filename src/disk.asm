@@ -1,7 +1,7 @@
 [bits 16]
 
-%ifndef DRIVE_SECTOR_NB
-	DRIVE_SECTOR_NB equ 1
+%ifndef SECTORS_TO_READ
+	SECTORS_TO_READ equ 1
 %endif
 
 disk_load:
@@ -10,7 +10,7 @@ disk_load:
 		mov dl, 0x80       ; drive index (0x80 = 1st hard disk)
 		
 		int 0x13   ; read disk sectors
-		jc .failed ; if error failed
+		jc .failed ; if error, jump to failed
 
 		ret
 
@@ -24,7 +24,7 @@ disk_load:
 dap_struct:
 	db 0x10            ; size of the DAP
 	db 0               ; unused, set to 0
-	dw DRIVE_SECTOR_NB ; number of sectors to be read
+	dw SECTORS_TO_READ ; number of sectors to be read
 	dw KERNEL_OFFSET   ; offset pointer to the memory buffer to which sectors will be transferred
 	dw KERNEL_SEGMENT  ; segment pointer to the memory buffer to which sectors will be transferred
 	dd 1               ; lower halt of the start of the sectors to be read
