@@ -5,21 +5,21 @@
 %endif
 
 disk_load:
-		mov si, dap_struct ; pointer to the DAP
-		mov ah, 0x42       ; extended read sectors mode
-		mov dl, 0x80       ; drive index (0x80 = 1st hard disk)
-		
-		int 0x13   ; read disk sectors
-		jc .failed ; if error, jump to failed
+	mov si, dap_struct ; pointer to the DAP
+	mov ah, 0x42       ; extended read sectors mode
+	mov dl, 0x80       ; drive index (0x80 = 1st hard disk)
 
-		ret
+	int 0x13   ; read disk sectors
+	jc .failed ; if error, jump to failed
 
-    .failed:
-        mov si, .msg_load_failed ; set msg to print
-        call print_string
-        jmp halt
+	ret
 
-    .msg_load_failed: db 'Failed to load drive', 0
+	.failed:
+		mov si, .msg_load_failed ; set msg to print
+		call print_string
+		jmp halt
+
+	.msg_load_failed: db 'Failed to load drive', 0
 
 dap_struct:
 	db 0x10            ; size of the DAP

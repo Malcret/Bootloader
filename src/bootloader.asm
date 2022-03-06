@@ -6,14 +6,14 @@ KERNEL_OFFSET equ 0x7e00
 
 boot:
 	; setup segments
-    xor ax, ax
-    mov ds, ax
-    mov ss, ax
+	xor ax, ax
+	mov ds, ax
+	mov ss, ax
 	mov es, ax
 
 	; setup stack
 	mov bp, 0x7c00
-    mov sp, bp
+	mov sp, bp
 
 	mov si, msg_load_kernel ; set msg to print
 	call print_string
