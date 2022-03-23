@@ -2,7 +2,7 @@
 [org 0x7c00]
 
 KERNEL_SEGMENT equ 0x0000
-KERNEL_OFFSET equ 0x7e00
+KERNEL_OFFSET equ 0x8000
 
 boot:
 	; setup segments
